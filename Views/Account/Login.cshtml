@@ -1,0 +1,38 @@
+﻿@model LoginVM
+@{
+    ViewBag.Title = "Account | Login";
+}
+
+<style>
+    /* Clean up ASP.NET Core validation summary list styling */
+    .validation-summary-errors ul {
+        list-style-position: inside; /* Moves the bullet point inside the red box */
+        padding-left: 0;
+        margin: 0;
+    }
+</style>
+
+<div class="auth-card">
+    <h1>Login</h1>
+    <form method="post">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+        <label asp-for="Email">Email</label>
+        <input asp-for="Email" type="email" placeholder="Email" autofocus autocomplete="off">
+        <span asp-validation-for="Email"></span>
+
+        <label asp-for="Password">Password</label>
+        <input asp-for="Password" type="password" placeholder="Password">
+        <span asp-validation-for="Password"></span>
+
+        <label class="remember-row">
+            <input asp-for="RememberMe"> Remember Me
+        </label>
+
+        <button type="submit">Login</button>
+    </form>
+
+    <div class="auth-links">
+        <a href="/Account/ResetPassword">Forgot password?</a>
+    </div>
+</div>

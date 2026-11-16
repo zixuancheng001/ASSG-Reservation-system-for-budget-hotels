@@ -1,0 +1,319 @@
+﻿@model Demo.Models.Order
+
+@{
+    ViewData["Title"] = "Order Details";
+    TempData["Info"] = null;
+}
+
+<style>
+    .details-container {
+        min-height: calc(100vh - 70px);
+        background: #f7f7fb;
+        padding: 40px 6%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .receipt-card {
+        background: white;
+        border-radius: 20px;
+        width: 100%;
+        max-width: 750px;
+        padding: 40px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+    }
+
+    .success-header {
+        text-align: center;
+        padding-bottom: 30px;
+        border-bottom: 1px dashed #e0e0e0;
+    }
+
+    .success-icon {
+        font-size: 50px;
+        margin-bottom: 10px;
+    }
+
+    .success-header h1 {
+        margin: 0;
+        font-size: 26px;
+        color: #222;
+    }
+
+    .success-header p {
+        color: #666;
+        margin-top: 6px;
+        font-size: 15px;
+    }
+
+    .order-meta {
+        display: flex;
+        justify-content: space-between;
+        margin: 25px 0;
+        padding: 15px 20px;
+        background: #f9f9fc;
+        border-radius: 12px;
+        font-size: 14px;
+    }
+
+    .meta-item strong {
+        display: block;
+        color: #333;
+        margin-top: 4px;
+    }
+
+    .item-list {
+        margin-top: 25px;
+    }
+
+    .item-card {
+        display: flex;
+        gap: 20px;
+        padding: 15px 0;
+        border-bottom: 1px solid #f0f0f0;
+        align-items: center;
+    }
+
+    .item-image {
+        width: 100px;
+        height: 75px;
+        object-fit: cover;
+        border-radius: 10px;
+        flex-shrink: 0;
+    }
+
+    .item-placeholder {
+        width: 100px;
+        height: 75px;
+        border-radius: 10px;
+        background: #eeeef5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #aaa;
+        font-size: 12px;
+        flex-shrink: 0;
+    }
+
+    .item-details {
+        flex: 1;
+    }
+
+        .item-details h3 {
+            margin: 0 0 6px 0;
+            font-size: 18px;
+            color: #222;
+        }
+
+    .item-dates {
+        font-size: 13px;
+        color: #777;
+    }
+
+    .item-price {
+        font-size: 17px;
+        font-weight: 700;
+        color: #655bd0;
+    }
+
+    .receipt-summary {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid #f0f0f0;
+    }
+
+    .summary-line {
+        display: flex;
+        justify-content: space-between;
+        font-size: 18px;
+        font-weight: 700;
+        color: #222;
+    }
+
+    .action-buttons {
+        margin-top: 35px;
+        display: flex;
+        gap: 15px;
+    }
+
+    .btn-primary-action {
+        flex: 1;
+        text-align: center;
+        padding: 13px;
+        background: #655bd0;
+        color: white;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+    }
+
+        .btn-primary-action:hover {
+            background: #5449bd;
+            color: white;
+        }
+
+    .btn-secondary-action {
+        flex: 1;
+        text-align: center;
+        padding: 13px;
+        background: #f0effd;
+        color: #5e54c8;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+    }
+
+        .btn-secondary-action:hover {
+            background: #e4e2fb;
+            color: #4e45b6;
+        }
+</style>
+
+<div class="details-container">
+    <div class="receipt-card">
+
+        @if (TempData["Success"] != null)
+        {
+            <div style="background: #e8f5e9; color: #2e7d32; padding: 12px 20px; border-radius: 10px; margin-bottom: 20px; font-weight: 600;">
+                @TempData["Success"]
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div style="background: #ffebee; color: #c62828; padding: 12px 20px; border-radius: 10px; margin-bottom: 20px; font-weight: 600;">
+                @TempData["Error"]
+            </div>
+        }
+
+        <!-- Header -->
+        <div class="success-header">
+            <div class="success-icon">🎉</div>
+            <h1>Reservation Confirmed!</h1>
+            <p>Thank you for your booking. Here is your order confirmation.</p>
+        </div>
+
+        <!-- Meta Info -->
+        <div class="order-meta">
+            <div class="meta-item">
+                Order ID
+                <strong>#@Model.OrderId</strong>
+            </div>
+            <div class="meta-item">
+                Date
+                <strong>@Model.OrderDate.ToString("dd MMM yyyy, HH:mm")</strong>
+            </div>
+            <div class="meta-item">
+                Status
+                <strong style="color: #179957;">@Model.Status</strong>
+            </div>
+        </div>
+
+        <!-- Reserved Rooms List -->
+        <div class="item-list">
+            <h4 style="margin-bottom: 15px; color: #444;">Reserved Accommodation</h4>
+
+            @foreach (var item in Model.Items)
+            {
+                var nights = (item.CheckOutDate - item.CheckInDate).Days;
+                var total = item.Price;
+
+                <div class="item-card">
+                    @if (!string.IsNullOrEmpty(item.Product?.PhotoURL))
+                    {
+                        <img src="/photos/@item.Product.PhotoURL" class="item-image" alt="@item.Product.Name" />
+                    }
+                    else
+                    {
+                        <div class="item-placeholder">No Photo</div>
+                    }
+
+                    <div class="item-details">
+                        <h3>@(item.Product?.Name ?? item.ProductId)</h3>
+                        <div class="item-dates">
+                            📅 @item.CheckInDate.ToString("dd MMM yyyy") - @item.CheckOutDate.ToString("dd MMM yyyy")
+                            (@(nights > 0 ? nights : 1) night(s))
+                        </div>
+                    </div>
+
+                    <div class="item-price">
+                        RM @total.ToString("0.00")
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Summary -->
+        <div class="receipt-summary">
+            @if (Model.DiscountAmount > 0)
+            {
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; color:#179957;">
+                    <span>Promo discount (@Model.CouponCode)</span>
+                    <span>- RM @Model.DiscountAmount.ToString("0.00")</span>
+                </div>
+            }
+            <div class="summary-line">
+                <span>Total Amount Paid</span>
+                <span style="color: #655bd0;">RM @Model.TotalAmount.ToString("0.00")</span>
+            </div>
+        </div>
+
+        <!-- FEATURE 4 ADDITION: Dynamic QR Code Section for Check-in -->
+        <div style="margin-top: 30px; padding: 25px; background: #f9f9fc; border-radius: 14px; text-align: center;">
+            <h4 style="margin-bottom: 8px; color: #333; font-size: 16px;">📱 Check-in QR Code</h4>
+            <p style="color: #666; font-size: 13px; margin-bottom: 15px;">Present this QR code at the counter for fast check-in verification.</p>
+
+            <!-- Container where the dynamic QR code will be rendered -->
+            <div id="qrcode" style="display: inline-block; padding: 10px; background: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);"></div>
+
+            <div style="margin-top: 10px; font-size: 12px; color: #888;">
+                Voucher Identifier: <strong>#@Model.OrderId</strong>
+            </div>
+        </div>
+        <!-- End of Feature 4 Addition -->
+        <!-- Actions -->
+        <div class="action-buttons">
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-controller="Order" asp-action="Index" class="btn-primary-action">Back to Orders</a>
+            }
+            else
+            {
+                <a asp-controller="Catalog" asp-action="Index" class="btn-primary-action">Back to Rooms</a>
+            }
+
+            <a asp-controller="Order" asp-action="Invoice" asp-route-id="@Model.OrderId" target="_blank" class="btn-secondary-action">
+                📄 Export PDF Receipt
+            </a>
+
+            <a href="javascript:window.print()" class="btn-secondary-action">🖨️ Print Receipt</a>
+        </div>
+
+    </div>
+</div>
+
+<!-- FEATURE 4 SCRIPT: Load qrcode.js library and dynamically generate QR code -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Retrieve current order ID from the model securely
+        var orderId = "@Model.OrderId";
+        var qrData = "CHECKIN-ORDER-" + orderId;
+
+        var qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = "";
+
+        // Generate cryptographic-like check-in token inside the container
+        new QRCode(qrContainer, {
+            text: qrData,
+            width: 150,
+            height: 150,
+            colorDark: "#222222",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    });
+</script>

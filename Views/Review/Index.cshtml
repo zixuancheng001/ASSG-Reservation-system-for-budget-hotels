@@ -1,0 +1,63 @@
+@model IEnumerable<Demo.Models.RoomReview>
+@{
+    ViewData["Title"] = "Review Management";
+}
+
+<div style="min-height:calc(100vh - 70px); background:#f7f7fb; padding:40px 6%;">
+    <div style="max-width:1150px; margin:auto; background:white; padding:32px; border-radius:22px; box-shadow:0 8px 30px rgba(0,0,0,.06); border:1px solid #efedf8;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap;">
+            <div>
+                <h1 style="margin:0; color:#202033;">Review Management</h1>
+                <p style="color:#777;">View and moderate member reviews.</p>
+            </div>
+            <form method="get" style="display:flex; gap:8px; flex-wrap:wrap; background:white; padding:14px; border-radius:16px; box-shadow:0 8px 25px rgba(0,0,0,.05);">
+                <input name="search" value="@ViewBag.Search" placeholder="Room, ID or member email" style="padding:10px; border:1px solid #ddd; border-radius:8px; min-width:220px;" />
+                <select name="rating" style="padding:10px; border:1px solid #ddd; border-radius:8px;">
+                    <option value="">All ratings</option>
+                    @for (var i = 5; i >= 1; i--)
+                    {
+                        <option value="@i" selected="@(ViewBag.Rating as int? == i)">@i star@(i == 1 ? "" : "s")</option>
+                    }
+                </select>
+                <button type="submit" style="padding:10px 16px; border:0; border-radius:8px; background:#655bd0; color:white; cursor:pointer;">Filter</button>
+            </form>
+        </div>
+
+        <div style="margin-top:22px; background:white; border-radius:20px; overflow:hidden; box-shadow:0 8px 25px rgba(0,0,0,.06); border:1px solid #efedf8;">
+            <table style="width:100%; border-collapse:collapse; min-width:760px;">
+                <thead>
+                    <tr style="background:#f4f2fb; text-align:left;">
+                        <th style="padding:14px;">Room</th>
+                        <th style="padding:14px;">Member</th>
+                        <th style="padding:14px;">Rating</th>
+                        <th style="padding:14px;">Comment</th>
+                        <th style="padding:14px;">Date</th>
+                        <th style="padding:14px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var review in Model)
+                {
+                    <tr style="border-top:1px solid #eee; vertical-align:top;">
+                        <td style="padding:14px;">@(review.Product?.Name ?? review.ProductId)<br /><small style="color:#888;">@review.ProductId</small></td>
+                        <td style="padding:14px;">@(review.Member?.Name ?? review.MemberEmail)<br /><small style="color:#888;">@review.MemberEmail</small></td>
+                        <td style="padding:14px; color:#f59e0b; white-space:nowrap;">@(new string('★', review.Rating))@(new string('☆', 5 - review.Rating))</td>
+                        <td style="padding:14px; max-width:380px; white-space:pre-wrap;">@review.Comment</td>
+                        <td style="padding:14px; white-space:nowrap; color:#777;">@review.CreatedAt.ToString("dd MMM yyyy")</td>
+                        <td style="padding:14px;">
+                            <form asp-action="Delete" method="post" onsubmit="return confirm('Delete this review?');">
+                                <input type="hidden" name="id" value="@review.ReviewId" />
+                                <button type="submit" style="border:0; border-radius:7px; padding:8px 12px; color:white; background:#d94350; cursor:pointer;">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+            @if (!Model.Any())
+            {
+                <p style="padding:30px; text-align:center; color:#777;">No reviews found.</p>
+            }
+        </div>
+    </div>
+</div>

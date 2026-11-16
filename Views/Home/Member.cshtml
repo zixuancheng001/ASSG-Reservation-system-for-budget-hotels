@@ -1,0 +1,477 @@
+﻿@using Demo.Models
+@{
+    ViewData["Title"] = "Home | Member";
+
+    var memberName   = User.Identity!.Name!;
+    var recentOrders = ViewBag.RecentOrders as List<Order> ?? new();
+    int cartCount    = ViewBag.CartCount    ?? 0;
+    int totalOrders  = ViewBag.TotalOrders  ?? 0;
+    int roomCount    = ViewBag.FeaturedRooms is List<Product> r ? r.Count : 0;
+}
+
+<style>
+    .member-home {
+        padding: 44px 6%;
+        min-height: calc(100vh - 70px);
+        background: #f4f4fb;
+    }
+
+    /* ── Hero banner ── */
+
+    .hero-banner {
+        background: linear-gradient(135deg, #7067d8 0%, #a56fd6 55%, #c87fcc 100%);
+        border-radius: 20px;
+        padding: 36px 40px;
+        margin-bottom: 28px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+    }
+
+        .hero-banner::before {
+            content: "";
+            position: absolute;
+            top: -50px; right: -50px;
+            width: 260px; height: 260px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+            pointer-events: none;
+        }
+
+        .hero-banner::after {
+            content: "";
+            position: absolute;
+            bottom: -70px; left: 30%;
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            pointer-events: none;
+        }
+
+    .hero-left {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-greeting {
+        font-size: 13px;
+        font-weight: 500;
+        opacity: 0.8;
+        margin: 0 0 6px;
+        letter-spacing: 0.3px;
+    }
+
+    .hero-name {
+        font-size: 28px;
+        font-weight: 760;
+        margin: 0 0 8px;
+        line-height: 1.2;
+    }
+
+    .hero-date {
+        font-size: 13px;
+        opacity: 0.7;
+        margin: 0;
+    }
+
+    .hero-right {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 1;
+        flex-shrink: 0;
+    }
+
+    .hero-btn-white {
+        background: white;
+        color: #6c63d8;
+        padding: 11px 22px;
+        border-radius: 10px;
+        font-weight: 700;
+        text-decoration: none;
+        font-size: 14px;
+        transition: 0.2s;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        white-space: nowrap;
+    }
+
+        .hero-btn-white:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+            color: #5652c0;
+        }
+
+    .hero-btn-ghost {
+        background: rgba(255,255,255,0.15);
+        color: white;
+        border: 2px solid rgba(255,255,255,0.45);
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        font-size: 14px;
+        transition: 0.2s;
+        white-space: nowrap;
+    }
+
+        .hero-btn-ghost:hover {
+            background: rgba(255,255,255,0.25);
+            color: white;
+        }
+
+    /* ── Stats grid ── */
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 18px;
+        padding: 20px 22px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        transition: box-shadow .2s, transform .15s;
+    }
+
+        .stat-card:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.09);
+            transform: translateY(-2px);
+        }
+
+    .stat-pip {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+    }
+
+    .pip-purple { background: #eeecff; }
+    .pip-green  { background: #e4f8ef; }
+    .pip-orange { background: #fff3e4; }
+
+    .stat-text p {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 600;
+        color: #aaaac0;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+    }
+
+    .stat-text h3 {
+        margin: 4px 0 0;
+        font-size: 26px;
+        font-weight: 760;
+        color: #1a1a2e;
+    }
+
+    /* ── Section label ── */
+
+    .section-label {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: #aaaac0;
+        margin-bottom: 14px;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+    }
+
+        .section-header .section-label {
+            margin-bottom: 0;
+        }
+
+    .see-all {
+        font-size: 13px;
+        color: #7067d8;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+        .see-all:hover {
+            text-decoration: underline;
+        }
+
+    /* ── Orders card ── */
+
+    .orders-card {
+        background: white;
+        border-radius: 18px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 32px;
+    }
+
+    .orders-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .orders-table th {
+            background: #f7f7fb;
+            padding: 13px 18px;
+            text-align: left;
+            font-size: 12px;
+            color: #9898b0;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid #eee;
+        }
+
+        .orders-table td {
+            padding: 14px 18px;
+            font-size: 14px;
+            color: #44445a;
+            border-bottom: 1px solid #f2f2f2;
+        }
+
+        .orders-table tr:last-child td {
+            border-bottom: none;
+        }
+
+    .order-badge {
+        display: inline-block;
+        padding: 4px 11px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-pending   { background: #fff8e6; color: #c08000; }
+    .badge-completed { background: #e4f8ef; color: #179957; }
+    .badge-cancelled { background: #ffecee; color: #d94350; }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #aaaac0;
+    }
+
+        .empty-state p {
+            margin: 8px 0 0;
+            font-size: 14px;
+        }
+
+    /* ── Quick links ── */
+
+    .quick-links {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    }
+
+    .quick-link {
+        background: white;
+        border-radius: 18px;
+        padding: 22px 16px;
+        text-align: center;
+        text-decoration: none;
+        color: inherit;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        transition: box-shadow .2s, transform .15s;
+        border: 2px solid transparent;
+    }
+
+        .quick-link:hover {
+            border-color: #7067d8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(112,103,216,0.12);
+            color: inherit;
+        }
+
+    .quick-link-icon {
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+
+    .quick-link-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #44445a;
+    }
+
+    /* ── Responsive ── */
+
+    @@media (max-width: 1024px) {
+        .quick-links { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @@media (max-width: 700px) {
+        .stats-grid  { grid-template-columns: 1fr; }
+        .quick-links { grid-template-columns: repeat(2, 1fr); }
+        .hero-banner { flex-direction: column; align-items: flex-start; padding: 28px 24px; }
+        .hero-name   { font-size: 22px; }
+    }
+</style>
+
+
+<div class="member-home">
+
+    <!-- Hero banner -->
+
+    <div class="hero-banner">
+
+        <div class="hero-left">
+            <p class="hero-greeting">👋 Good to see you,</p>
+            <h1 class="hero-name">@(User.FindFirst("Name")?.Value ?? memberName.Split('@')[0])</h1>
+            <p class="hero-date">📅 @DateTime.Now.ToString("dddd, dd MMMM yyyy")</p>
+        </div>
+
+        <div class="hero-right">
+            <a asp-controller="Catalog"
+               asp-action="Index"
+               class="hero-btn-white">
+                🔍 Browse Rooms
+            </a>
+            <a asp-controller="Cart"
+               asp-action="Index"
+               class="hero-btn-ghost">
+                🛒 My Cart (@cartCount)
+            </a>
+        </div>
+
+    </div>
+
+
+    <!-- Stats -->
+
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <div class="stat-pip pip-purple">🏨</div>
+            <div class="stat-text">
+                <p>Available Rooms</p>
+                <h3>@roomCount</h3>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-pip pip-green">📋</div>
+            <div class="stat-text">
+                <p>My Orders</p>
+                <h3>@totalOrders</h3>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-pip pip-orange">🛒</div>
+            <div class="stat-text">
+                <p>Cart Items</p>
+                <h3>@cartCount</h3>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Recent Orders -->
+
+    <div class="section-header">
+        <p class="section-label">Recent Orders</p>
+        <a asp-controller="Order"
+           asp-action="Index"
+           class="see-all">
+            View all →
+        </a>
+    </div>
+
+    <div class="orders-card">
+
+        @if (recentOrders.Any())
+        {
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Date</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in recentOrders)
+                    {
+                        <tr>
+                            <td><strong>#@order.OrderId</strong></td>
+                            <td>@order.OrderDate.ToString("dd MMM yyyy")</td>
+                            <td><strong>RM @order.TotalAmount.ToString("0.00")</strong></td>
+                            <td>
+                                <span class="order-badge badge-@order.Status.ToLower()">
+                                    @order.Status
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-state">
+                <div style="font-size: 38px">📋</div>
+                <p>You haven't placed any orders yet.</p>
+            </div>
+        }
+
+    </div>
+
+
+    <!-- Quick Actions -->
+
+    <p class="section-label">Quick Actions</p>
+
+    <div class="quick-links">
+
+        <a asp-controller="Catalog"
+           asp-action="Index"
+           class="quick-link">
+            <div class="quick-link-icon">🔍</div>
+            <div class="quick-link-label">Browse Rooms</div>
+        </a>
+
+        <a asp-controller="Cart"
+           asp-action="Index"
+           class="quick-link">
+            <div class="quick-link-icon">🛒</div>
+            <div class="quick-link-label">My Cart</div>
+        </a>
+
+        <a asp-controller="Order"
+           asp-action="Index"
+           class="quick-link">
+            <div class="quick-link-icon">📋</div>
+            <div class="quick-link-label">My Orders</div>
+        </a>
+
+        <a asp-controller="Account"
+           asp-action="UpdateProfile"
+           class="quick-link">
+            <div class="quick-link-icon">👤</div>
+            <div class="quick-link-label">My Profile</div>
+        </a>
+
+    </div>
+
+</div>

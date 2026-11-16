@@ -1,0 +1,105 @@
+@model IEnumerable<Demo.Models.Coupon>
+
+@{
+    ViewBag.Title = "Coupon Management";
+}
+
+<style>
+    main {
+        align-items: flex-start !important;
+        padding: 32px 4% !important;
+    }
+
+    .data-card {
+        width: 100% !important;
+        max-width: 900px !important;
+    }
+</style>
+
+<div class="data-card">
+    <div class="card-header-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h1>Coupon Management</h1>
+        <a asp-action="Create" class="btn-action-gradient">+ Add New Coupon</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <p style="color: #888; text-align: center; padding: 30px 0;">No coupons yet.</p>
+    }
+    else
+    {
+        <table class="custom-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th style="width: 130px;">Discount</th>
+                    <th style="width: 130px;">Expiry Date</th>
+                    <th style="width: 90px;">Status</th>
+                    <th style="width: 200px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td><strong>@item.Code</strong></td>
+                        <td>@item.DiscountPercent.ToString("0.##")%</td>
+                        <td>
+                            @if (item.ExpiryDate.HasValue)
+                            {
+                                // Show red if expired
+                                if (item.ExpiryDate.Value < DateTime.Today)
+                                {
+                                    <span style="color: #d94350;">@item.ExpiryDate.Value.ToString("dd MMM yyyy") (Expired)</span>
+                                }
+                                else
+                                {
+                                    @item.ExpiryDate.Value.ToString("dd MMM yyyy")
+                                }
+                            }
+                            else
+                            {
+                                <span style="color: #888;">No Expiry</span>
+                            }
+                        </td>
+                        <td>
+                            @if (item.IsActive)
+                            {
+                                <span class="badge-yes">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge-no">Inactive</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a asp-action="Edit" asp-route-id="@item.Code" class="btn-edit">Edit</a>
+
+                                <!-- Toggle Active -->
+                                <form asp-action="ToggleActive" asp-route-id="@item.Code" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    @if (item.IsActive)
+                                    {
+                                        <button type="submit" class="btn-edit" style="background:#fff8e6; color:#d99b00; border:1px solid #ffe4a0;">Deactivate</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn-edit">Activate</button>
+                                    }
+                                </form>
+
+                                <!-- Delete -->
+                                <form asp-action="Delete" asp-route-id="@item.Code" method="post" style="display:inline;"
+                                      onsubmit="return confirm('Delete coupon @item.Code?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn-delete">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

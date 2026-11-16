@@ -1,0 +1,59 @@
+﻿@model RegisterVM
+
+@{
+
+    ViewBag.Title = "Account | Register";
+
+}
+
+<div class="auth-card">
+    <h1>Register</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly"></div>
+
+        <label class="avatar-upload">
+            <input asp-for="Photo" accept="image/jpeg,image/png" hidden onchange="previewPhoto(this)">
+            <img id="photoPreview" src="/images/photo.jpg" alt="Preview">
+            <small>Select Photo...</small>
+        </label>
+
+        <span asp-validation-for="Photo"></span>
+
+        <input asp-for="Email" type="email" placeholder="Email" autofocus autocomplete="off">
+        <span asp-validation-for="Email"></span>
+
+        <input asp-for="Password" type="password" placeholder="Password">
+        <span asp-validation-for="Password"></span>
+
+        <input asp-for="Confirm" type="password" placeholder="Confirm Password">
+        <span asp-validation-for="Confirm"></span>
+
+        <input asp-for="Name" type="text" placeholder="Name">
+        <span asp-validation-for="Name"></span>
+
+        <div class="btn-group">
+            <button type="submit">Register</button>
+            <button type="reset" onclick="document.getElementById('photoPreview').src = '/images/photo.jpg'">Reset</button>
+        </div>
+    </form>
+</div>
+
+@section foot {
+
+    <script>
+
+        $.validator.setDefaults({ ignore: '' });
+
+        function previewPhoto(input) {
+
+            if (input.files && input.files[0]) {
+                document.getElementById('photoPreview').src = URL.createObjectURL(input.files[0]);
+            }
+
+        }
+
+    </script>
+
+}
+

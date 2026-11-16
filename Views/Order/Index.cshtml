@@ -1,0 +1,257 @@
+@{
+    ViewData["Title"] = "Order Management";
+}
+
+<style>
+    main {
+        align-items: flex-start !important;
+        padding: 32px 4% !important;
+    }
+
+    .data-card {
+        width: 100% !important;
+        max-width: 1400px !important;
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .status-completed { background: #e8f8ef; color: #179957; }
+    .status-pending   { background: #fff8e6; color: #d99b00; }
+    .status-cancelled { background: #fdebec; color: #d94350; }
+
+    .btn-scan-qr {
+        background: #655bd0;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(101,91,208,0.25);
+        transition: all 0.2s ease;
+    }
+
+    .btn-scan-qr:hover {
+        background: #544cb8;
+        color: white;
+        transform: translateY(-1px);
+    }
+</style>
+
+<div class="data-card">
+    <div class="card-header-bar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h1>Order Management</h1>
+        <a asp-controller="Order" asp-action="ScanQR" class="btn-scan-qr">
+            <i class="bi bi-qr-code-scan"></i> Scan QR
+        </a>
+    </div>
+
+    <!-- CONTROL BAR -->
+    <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+        <input type="text" id="searchInput" placeholder="Search order ID or member email..."
+               style="flex:2; padding:8px 12px; border-radius:8px; border:1px solid #ccc;"
+               oninput="queueOrderLoad()" />
+
+        <select id="statusFilter" style="flex:1; padding:8px 12px; border-radius:8px; border:1px solid #ccc;" onchange="loadOrders(1)">
+            <option value="">All Status</option>
+            <option value="Completed">Completed</option>
+            <option value="Pending">Pending</option>
+            <option value="Cancelled">Cancelled</option>
+        </select>
+
+        <select id="sortPicker" style="flex:1; padding:8px 12px; border-radius:8px; border:1px solid #ccc;" onchange="loadOrders(1)">
+            <option value="id_asc">Order ID (Low to High)</option>
+            <option value="id_desc">Order ID (High to Low)</option>
+            <option value="amount_asc">Amount (Low to High)</option>
+            <option value="amount_desc">Amount (High to Low)</option>
+        </select>
+    </div>
+
+    <div id="ajaxStatus" style="font-size:13px; color:#777; margin:-8px 0 12px;"></div>
+
+    <!-- TABLE -->
+    <div style="width:100%; overflow-x:auto;">
+        <table class="custom-table" style="width:100%; table-layout:auto; border-collapse:collapse;">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Member Email</th>
+                    <th>Date</th>
+                    <th>Items</th>
+                    <th>Total Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="orderTableBody">
+                <!-- Rendered by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <div id="paginationContainer" style="text-align:center; margin-top:15px;"></div>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section scripts {
+<script>
+    let searchTimer   = null;
+    let currentRequest = null;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        loadOrders(1);
+    });
+
+    function queueOrderLoad() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => loadOrders(1), 250);
+    }
+
+    function loadOrders(page = 1) {
+        const query  = document.getElementById('searchInput').value;
+        const status = document.getElementById('statusFilter').value;
+        const sortBy = document.getElementById('sortPicker').value;
+
+        const url = `/Order/GetOrdersJson?query=${encodeURIComponent(query)}&status=${encodeURIComponent(status)}&sortBy=${encodeURIComponent(sortBy)}&page=${page}`;
+        const tbody    = document.getElementById('orderTableBody');
+        const statusEl = document.getElementById('ajaxStatus');
+
+        if (currentRequest) currentRequest.abort();
+        currentRequest = new AbortController();
+
+        statusEl.textContent = 'Loading orders...';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading order data...</td></tr>';
+
+        fetch(url, { signal: currentRequest.signal })
+            .then(r => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            })
+            .then(data => {
+                const items       = data.items       || [];
+                const currentPage = data.currentPage || page;
+                const totalPages  = data.totalPages  || 1;
+                const totalItems  = data.totalItems  || items.length;
+
+                renderTable(items);
+                renderPagination(currentPage, totalPages);
+                statusEl.textContent = `${totalItems} order${totalItems === 1 ? '' : 's'} found`;
+            })
+            .catch(err => {
+                if (err.name === 'AbortError') return;
+                console.error('Error fetching orders:', err);
+                statusEl.textContent = 'Unable to load orders';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Failed to load order data.</td></tr>';
+            });
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '-';
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('en-MY', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    function renderTable(orders) {
+        const tbody = document.getElementById('orderTableBody');
+        tbody.innerHTML = '';
+
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        const tokenHtml  = tokenInput ? tokenInput.outerHTML : '';
+
+        if (!orders || orders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No orders found.</td></tr>';
+            return;
+        }
+
+        orders.forEach(o => {
+            const orderId     = o.orderId     || o.OrderId     || '';
+            const email       = escapeHtml(o.memberEmail || o.MemberEmail || 'N/A');
+            const date        = formatDate(o.orderDate   || o.OrderDate);
+            const itemCount   = o.itemCount   ?? o.ItemCount   ?? 0;
+            const totalAmount = o.totalAmount ?? o.TotalAmount ?? 0;
+            const status      = escapeHtml(o.status || o.Status || 'Pending');
+
+            // Status badge
+            let badgeClass = 'status-pending';
+            if (status === 'Completed') badgeClass = 'status-completed';
+            else if (status === 'Cancelled') badgeClass = 'status-cancelled';
+
+            const statusBadge = `<span class="status-badge ${badgeClass}">${status}</span>`;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-weight:700;">#${orderId}</td>
+                <td>${email}</td>
+                <td>${date}</td>
+                <td style="text-align:center;">${itemCount} item${itemCount === 1 ? '' : 's'}</td>
+                <td style="font-weight:600; color:#655bd0;">RM ${Number(totalAmount).toFixed(2)}</td>
+                <td>${statusBadge}</td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="/Order/Details/${orderId}" class="btn-edit">View</a>
+                        <a href="/Order/Edit/${orderId}" class="btn-edit" style="background:#f0edfa; color:#6b52ae;">Edit</a>
+                        <form action="/Order/Delete/${orderId}" method="post"
+                              onsubmit="return confirm('Are you sure you want to delete order #${orderId}?');"
+                              style="display:inline;">
+                            ${tokenHtml}
+                            <button type="submit" class="btn-delete">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderPagination(currentPage, totalPages) {
+        const container = document.getElementById('paginationContainer');
+        if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+        container.innerHTML = `
+            <div style="display:inline-flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:center;">
+                <button type="button" class="btn-action-gradient"
+                        ${currentPage === 1 ? 'disabled' : ''}
+                        onclick="loadOrders(${currentPage - 1})">Previous</button>
+                ${renderPageButtons(currentPage, totalPages)}
+                <button type="button" class="btn-action-gradient"
+                        ${currentPage === totalPages ? 'disabled' : ''}
+                        onclick="loadOrders(${currentPage + 1})">Next</button>
+            </div>
+        `;
+    }
+
+    function renderPageButtons(currentPage, totalPages) {
+        let html = '';
+        for (let i = 1; i <= totalPages; i++) {
+            const active = i === currentPage;
+            html += `<button type="button" onclick="loadOrders(${i})"
+                        style="min-width:36px; padding:8px 10px; border-radius:999px;
+                               border:1px solid ${active ? '#8ea6e0' : '#ddd'};
+                               background:${active ? '#f0edfa' : '#fff'};
+                               color:${active ? '#6b52ae' : '#555'};
+                               font-weight:700; cursor:pointer;">${i}</button>`;
+        }
+        return html;
+    }
+</script>
+}

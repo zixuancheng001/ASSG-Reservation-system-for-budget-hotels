@@ -1,0 +1,298 @@
+﻿@model Demo.Models.CheckoutViewModel
+
+@{
+    ViewData["Title"] = "Room Reservation Checkout";
+    var cartItems = ViewBag.CartItems as IEnumerable<Demo.Models.ShoppingCartItem>;
+    decimal grandTotal = ViewBag.GrandTotal != null ? (decimal)ViewBag.GrandTotal : 0;
+}
+
+<!-- Include Bootstrap CSS & Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+
+<div class="container py-5">
+    <h2 class="fw-bold mb-4" style="color: #6f5bd2;">
+        <i class="bi bi-credit-card-fill me-2"></i>Complete Your Reservation
+    </h2>
+
+    <div class="row g-4">
+        <!-- Left Column: Guest Details & Payment Form -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 rounded-4 p-4" style="background-color: #ffffff;">
+                <form asp-action="Checkout" method="post" id="checkoutForm">
+                    @Html.AntiForgeryToken()
+
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                    <h5 class="fw-bold mb-3" style="color: #4a3eb0;">1. Guest Details</h5>
+
+                    <div class="mb-3">
+                        <label asp-for="FullName" class="form-label fw-semibold"></label>
+                        <input asp-for="FullName" class="form-control rounded-3 py-2" placeholder="e.g. John Doe" required />
+                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Email" class="form-label fw-semibold"></label>
+                            <input asp-for="Email" class="form-control rounded-3 py-2" placeholder="name@example.com" required />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Phone" class="form-label fw-semibold"></label>
+                            <input asp-for="Phone" class="form-control rounded-3 py-2" placeholder="012-3456789" required />
+                            <span asp-validation-for="Phone" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <h5 class="fw-bold mb-3" style="color: #4a3eb0;">2. Promo Code</h5>
+                    <div class="mb-4">
+                        <label asp-for="CouponCode" class="form-label fw-semibold"></label>
+                        <div class="input-group">
+                            <input asp-for="CouponCode" id="CouponCode" class="form-control rounded-start-3 py-2" placeholder="Enter promo code" style="text-transform:uppercase" />
+                            <button type="button" id="applyCouponButton" class="btn btn-outline-secondary">Apply</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('promoModal').style.display='flex'" title="View available promo codes">🎟️</button>
+                        </div>
+                        <span asp-validation-for="CouponCode" class="text-danger small"></span>
+                        <div id="couponMessage" class="form-text">Discount is checked securely before payment.</div>
+                    </div>
+
+                    <h5 class="fw-bold mb-3" style="color: #4a3eb0;">3. Select Payment Method</h5>
+
+                    <div class="mb-3">
+                        <div class="form-check form-check-inline me-4">
+                            <input class="form-check-input pay-method-radio" type="radio" asp-for="PaymentMethod" value="CreditCard" id="payCard" checked />
+                            <label class="form-check-label fw-medium" for="payCard"><i class="bi bi-credit-card me-1"></i> Credit / Debit Card</label>
+                        </div>
+                        <div class="form-check form-check-inline me-4">
+                            <input class="form-check-input pay-method-radio" type="radio" asp-for="PaymentMethod" value="FPX" id="payFPX" />
+                            <label class="form-check-label fw-medium" for="payFPX"><i class="bi bi-bank me-1"></i> Online Banking (FPX)</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input pay-method-radio" type="radio" asp-for="PaymentMethod" value="TnG" id="payTnG" />
+                            <label class="form-check-label fw-medium" for="payTnG"><i class="bi bi-phone me-1"></i> Touch 'n Go</label>
+                        </div>
+                    </div>
+
+                    <!-- Option A: Credit Card Inputs -->
+                    <div id="creditCardSection" class="p-3 rounded-3 mb-4 payment-section" style="background-color: #f4f2fb; border: 1px solid #e0dbf5;">
+                        <div class="mb-3">
+                            <label asp-for="CardName" class="form-label fw-semibold"></label>
+                            <input asp-for="CardName" id="CardName" class="form-control rounded-3" placeholder="NAME ON CARD" />
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="CardNumber" class="form-label fw-semibold"></label>
+                            <input asp-for="CardNumber" id="CardNumber" class="form-control rounded-3" placeholder="1234 5678 9012 3456" />
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-2">
+                                <label asp-for="ExpiryDate" class="form-label fw-semibold"></label>
+                                <input asp-for="ExpiryDate" id="ExpiryDate" class="form-control rounded-3" placeholder="MM/YY" />
+                            </div>
+                            <div class="col-6 mb-2">
+                                <label asp-for="CVV" class="form-label fw-semibold"></label>
+                                <input asp-for="CVV" id="CVV" class="form-control rounded-3" placeholder="123" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Option B: FPX Online Banking Inputs -->
+                    <div id="fpxSection" class="p-3 rounded-3 mb-4 payment-section" style="background-color: #f4f2fb; border: 1px solid #e0dbf5; display: none;">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Select Bank</label>
+                            <!-- FIX: Added asp-for="BankSelect" to ensure model binding on HTTP POST -->
+                            <select asp-for="BankSelect" id="BankSelect" class="form-select rounded-3">
+                                <option value="">-- Choose Your Bank --</option>
+                                <option value="Maybank">Maybank2u</option>
+                                <option value="CIMB">CIMB Clicks</option>
+                                <option value="PublicBank">PBe Bank</option>
+                                <option value="RHB">RHB Now</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Option C: Touch 'n Go / DuitNow Mobile Transfer -->
+                    <div id="tngSection" class="p-3 rounded-3 mb-4 payment-section text-center" style="background-color: #f4f2fb; border: 1px solid #e0dbf5; display: none;">
+                        <div class="d-flex align-items-center justify-content-center mb-2">
+                            <i class="bi bi-phone-fill me-2 fs-4" style="color: #6f5bd2;"></i>
+                            <span class="fw-bold fs-6">Touch 'n Go / DuitNow Transfer</span>
+                        </div>
+                        <p class="small text-muted mb-3">Please transfer the total amount to the registered mobile number below:</p>
+
+                        <div class="bg-white p-3 rounded-3 border d-inline-block text-start w-100" style="max-width: 320px;">
+                            <div class="mb-2">
+                                <small class="text-muted d-block">Account Name / Receiver</small>
+                                <span class="fw-bold">Hotel Reservation System</span>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Registered Phone Number</small>
+                                <span class="fw-bold text-primary fs-5">012-345 6789</span>
+                            </div>
+                        </div>
+                        <p class="small text-muted mt-2 mb-0"><i class="bi bi-info-circle me-1"></i>Click "Confirm & Pay" after completing the transfer.</p>
+                    </div>
+
+                    <button type="submit" id="confirmPayButton" class="btn text-white w-100 py-3 rounded-3 fw-bold shadow-sm fs-5" style="background-color: #6f5bd2; border: none;">
+                        Confirm & Pay RM <span id="payAmount">@grandTotal.ToString("N2")</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right Column: Reservation Summary -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 rounded-4 p-4" style="background-color: #f9f8fe;">
+                <h5 class="fw-bold mb-3" style="color: #4a3eb0;">Reservation Summary</h5>
+                <hr />
+
+                @if (cartItems != null && cartItems.Any())
+                {
+                    @foreach (var item in cartItems)
+                    {
+                        int nights = (item.CheckOutDate - item.CheckInDate).Days;
+                        if (nights <= 0) nights = 1;
+                        decimal subtotal = nights * (item.Product?.Price ?? 0) * item.Quantity;
+
+                        <div class="d-flex align-items-center mb-3">
+                            <!-- FIX: Removed space in tag '< img' -> '<img>' -->
+                            <img src="/photos/@(item.Product?.PhotoURL ?? "room-placeholder.jpg")" class="rounded-3 me-3" style="width: 80px; height: 80px; object-fit: cover;" />
+                            <div class="flex-grow-1">
+                                <h6 class="fw-bold mb-1">@(item.Product?.Name ?? "Room")</h6>
+                                <small class="text-muted d-block mb-1">
+                                    <i class="bi bi-calendar-check me-1"></i>@item.CheckInDate.ToString("dd MMM") - @item.CheckOutDate.ToString("dd MMM yyyy") (@nights night(s))
+                                </small>
+                                <small class="text-muted">RM @item.Product?.Price / night × @item.Quantity room(s)</small>
+                            </div>
+                            <div class="text-end fw-bold fs-6" style="color: #6f5bd2;">
+                                RM @subtotal.ToString("N2")
+                            </div>
+                        </div>
+                    }
+
+                    <hr />
+                    <div id="discountRow" class="d-flex justify-content-between align-items-center mt-3" style="display:none !important; color:#179957;">
+                        <span>Promo discount</span>
+                        <span id="discountAmount">- RM 0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center fs-5 fw-bold mt-3">
+                        <span>Total Amount:</span>
+                        <span id="grandTotalDisplay" style="color: #6f5bd2;">RM @grandTotal.ToString("N2")</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Promo Code Modal -->
+<div id="promoModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45);
+     z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:16px; padding:28px; width:100%; max-width:420px;
+                box-shadow:0 8px 30px rgba(0,0,0,0.15); margin:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+            <h5 style="margin:0; font-weight:700; color:#4a3eb0;">🎟️ Available Promo Codes</h5>
+            <button type="button" onclick="document.getElementById('promoModal').style.display='none'"
+                    style="background:none; border:none; font-size:20px; cursor:pointer; color:#888;">✕</button>
+        </div>
+        <div id="promoList">
+            <p style="color:#888; text-align:center;">Loading...</p>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to handle UI switching and required field validation -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // Load promo codes when modal opens
+    document.querySelector('[onclick*="promoModal"]').addEventListener('click', function () {
+        fetch('/Order/GetAvailableCoupons')
+            .then(r => r.json())
+            .then(data => {
+                const list = document.getElementById('promoList');
+                if (!data.length) {
+                    list.innerHTML = '<p style="color:#888; text-align:center;">No promo codes available right now.</p>';
+                    return;
+                }
+                list.innerHTML = data.map(c => `
+                    <div style="display:flex; justify-content:space-between; align-items:center;
+                                border:1px dashed #c4b8f5; border-radius:10px; padding:12px 14px;
+                                margin-bottom:10px; background:#f9f7ff; cursor:pointer;"
+                         onclick="useCode('${c.code}')">
+                        <div>
+                            <strong style="color:#6b52ae; letter-spacing:1px;">${c.code}</strong>
+                            <div style="font-size:13px; color:#555; margin-top:2px;">${c.discountPercent}% off your booking</div>
+                            <div style="font-size:12px; color:#999; margin-top:1px;">${c.expiryText}</div>
+                        </div>
+                        <span style="background:#ede9ff; color:#6b52ae; border-radius:20px;
+                                     padding:4px 12px; font-size:13px; font-weight:600; white-space:nowrap;">
+                            -${c.discountPercent}%
+                        </span>
+                    </div>
+                `).join('');
+            })
+            .catch(() => {
+                document.getElementById('promoList').innerHTML = '<p style="color:#d94350; text-align:center;">Failed to load promo codes.</p>';
+            });
+    });
+
+    function useCode(code) {
+        document.getElementById('CouponCode').value = code;
+        document.getElementById('promoModal').style.display = 'none';
+        document.getElementById('applyCouponButton').click();
+    }
+    $(document).ready(function () {
+        $('#applyCouponButton').on('click', function () {
+            const button = $(this);
+            button.prop('disabled', true).text('Checking...');
+            $.post('@Url.Action("ApplyCoupon", "Order")', {
+                code: $('#CouponCode').val(),
+                __RequestVerificationToken: $('#checkoutForm input[name="__RequestVerificationToken"]').val()
+            }).done(function (result) {
+                $('#couponMessage').text(result.message).css('color', result.success ? '#179957' : '#d94350');
+                $('#grandTotalDisplay').text('RM ' + Number(result.total).toFixed(2));
+                $('#payAmount').text(Number(result.total).toFixed(2));
+                if (result.success && result.discount > 0) {
+                    $('#discountAmount').text('- RM ' + Number(result.discount).toFixed(2));
+                    $('#discountRow').css('display', 'flex').attr('style', 'display:flex !important; color:#179957;');
+                } else {
+                    $('#discountRow').attr('style', 'display:none !important;');
+                }
+            }).fail(function () {
+                $('#couponMessage').text('Unable to check the promo code. Please try again.').css('color', '#d94350');
+            }).always(function () { button.prop('disabled', false).text('Apply'); });
+        });
+
+        // Function to toggle validation attributes and section visibility
+        function updatePaymentFields() {
+            var selectedMethod = $('input[name="PaymentMethod"]:checked').val();
+
+            // Hide all payment detail sections
+            $('.payment-section').hide();
+
+            // Clear required attributes from all payment inputs
+            $('#creditCardSection input').prop('required', false);
+            $('#BankSelect').prop('required', false);
+
+            // Toggle sections based on selection and enforce required fields
+            if (selectedMethod === 'CreditCard') {
+                $('#creditCardSection').show();
+                $('#CardName, #CardNumber, #ExpiryDate, #CVV').prop('required', true);
+            } else if (selectedMethod === 'FPX') {
+                $('#fpxSection').show();
+                $('#BankSelect').prop('required', true);
+            } else if (selectedMethod === 'TnG') {
+                $('#tngSection').show();
+            }
+        }
+
+        // Initialize state on page load
+        updatePaymentFields();
+
+        // Trigger change event when user selects a different payment option
+        $('.pay-method-radio').on('change', function () {
+            updatePaymentFields();
+        });
+    });
+</script>

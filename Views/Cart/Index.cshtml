@@ -1,0 +1,535 @@
+﻿@model List<ShoppingCartItem>
+
+@{
+    ViewData["Title"] = "Shopping Cart";
+
+    decimal grandTotal = 0;
+}
+
+<style>
+    .cart-page {
+        min-height: calc(100vh - 70px);
+        background: #f7f7fb;
+        padding: 45px 6%;
+    }
+
+    .cart-header {
+        margin-bottom: 30px;
+    }
+
+        .cart-header h1 {
+            margin: 0;
+            font-size: 34px;
+            color: #202033;
+        }
+
+        .cart-header p {
+            margin-top: 8px;
+            color: #777;
+        }
+
+    .message {
+        padding: 14px 18px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        background: white;
+    }
+
+    .error-message {
+        color: #d94350;
+        border-left: 4px solid #d94350;
+    }
+
+    .success-message {
+        color: #179957;
+        border-left: 4px solid #179957;
+    }
+
+    .cart-layout {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 25px;
+        align-items: start;
+    }
+
+    .cart-items {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .cart-item {
+        background: white;
+        border-radius: 18px;
+        padding: 20px;
+        display: flex;
+        gap: 22px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+
+    .cart-image {
+        width: 190px;
+        height: 145px;
+        object-fit: cover;
+        border-radius: 13px;
+        flex-shrink: 0;
+    }
+
+    .cart-image-placeholder {
+        width: 190px;
+        height: 145px;
+        border-radius: 13px;
+        background: #eeeef5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        flex-shrink: 0;
+    }
+
+    .cart-item-content {
+        flex: 1;
+    }
+
+    .cart-item-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+        .cart-item-header h2 {
+            margin: 0;
+            font-size: 21px;
+            color: #222;
+        }
+
+    .room-id {
+        color: #888;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+
+    .date-info {
+        margin-top: 18px;
+        display: flex;
+        gap: 35px;
+    }
+
+    .date-box {
+        color: #888;
+        font-size: 13px;
+    }
+
+        .date-box strong {
+            display: block;
+            margin-top: 5px;
+            color: #333;
+            font-size: 14px;
+        }
+
+    .night-info {
+        margin-top: 15px;
+        color: #666;
+        font-size: 14px;
+    }
+
+    .room-total {
+        margin-top: 10px;
+        color: #655bd0;
+        font-size: 19px;
+        font-weight: 700;
+    }
+
+    .remove-button {
+        border: none;
+        background: #fff0f1;
+        color: #d94350;
+        padding: 8px 13px;
+        border-radius: 9px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+        .remove-button:hover {
+            background: #ffe1e4;
+        }
+
+    /* Summary */
+
+    .summary-card {
+        background: white;
+        border-radius: 18px;
+        padding: 25px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        position: sticky;
+        top: 90px;
+    }
+
+        .summary-card h2 {
+            margin-top: 0;
+            font-size: 22px;
+            color: #222;
+        }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin: 15px 0;
+        color: #666;
+        font-size: 14px;
+    }
+
+    .summary-total {
+        border-top: 1px solid #eee;
+        margin-top: 20px;
+        padding-top: 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+        .summary-total span {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .summary-total strong {
+            color: #655bd0;
+            font-size: 24px;
+        }
+
+    .checkout-button {
+        display: block;
+        text-align: center;
+        width: 100%;
+        margin-top: 20px;
+        padding: 12px;
+        background: #655bd0;
+        color: white;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+
+        .checkout-button:hover {
+            background: #5449bd;
+            color: white;
+        }
+
+    .clear-button {
+        width: 100%;
+        margin-top: 10px;
+        padding: 12px;
+        border: 1px solid #ddd;
+        background: white;
+        color: #d94350;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+        .clear-button:hover {
+            background: #fff5f5;
+        }
+
+    .continue-button {
+        display: block;
+        text-align: center;
+        margin-top: 10px;
+        padding: 12px;
+        border-radius: 10px;
+        background: #f0effd;
+        color: #5e54c8;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+        .continue-button:hover {
+            background: #e4e2fb;
+            color: #4e45b6;
+        }
+
+    .empty-cart {
+        background: white;
+        border-radius: 20px;
+        padding: 70px 30px;
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+
+    .empty-cart-icon {
+        font-size: 50px;
+        margin-bottom: 15px;
+    }
+
+    .empty-cart h2 {
+        color: #333;
+        margin-bottom: 8px;
+    }
+
+    .empty-cart p {
+        color: #888;
+    }
+
+    .empty-cart a {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 12px 22px;
+        background: #756bd8;
+        color: white;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    @@media (max-width: 850px) {
+        .cart-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .summary-card {
+            position: static;
+        }
+    }
+
+    @@media (max-width: 600px) {
+        .cart-item {
+            flex-direction: column;
+        }
+
+        .cart-image,
+        .cart-image-placeholder {
+            width: 100%;
+            height: 190px;
+        }
+
+        .date-info {
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+</style>
+
+
+<div class="cart-page">
+
+    <!-- Header -->
+
+    <div class="cart-header">
+        <h1>Shopping Cart</h1>
+        <p>Review your selected rooms before booking</p>
+    </div>
+
+
+    <!-- Messages -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="message error-message">
+            ❌ @TempData["Error"]
+        </div>
+    }
+
+    @* Messages handled by toast notification in _Layout *@
+
+
+    @if (Model.Count == 0)
+    {
+        <!-- Empty Cart -->
+
+        <div class="empty-cart">
+
+            <div class="empty-cart-icon">
+                🛒
+            </div>
+
+            <h2>Your cart is empty</h2>
+
+            <p>
+                You have not selected any rooms yet.
+            </p>
+
+            <a asp-controller="Catalog"
+               asp-action="Index">
+                Browse Rooms
+            </a>
+
+        </div>
+    }
+    else
+    {
+        <!-- Calculate total -->
+        foreach (var item in Model)
+        {
+            var nights =
+            (item.CheckOutDate - item.CheckInDate).Days;
+
+            var total =
+            item.Product.Price * nights * item.Quantity;
+
+            grandTotal += total;
+        }
+
+
+        <div class="cart-layout">
+
+            <!-- LEFT: ITEMS -->
+
+            <div class="cart-items">
+
+                @foreach (var item in Model)
+                {
+                    var nights =
+                    (item.CheckOutDate - item.CheckInDate).Days;
+
+                    var total =
+                    item.Product.Price * nights * item.Quantity;
+
+                    <div class="cart-item">
+
+                        <!-- Image -->
+                        @if (!string.IsNullOrEmpty(item.Product.PhotoURL))
+                        {
+                            <img src="/photos/@item.Product.PhotoURL"
+                                 class="cart-image"
+                                 alt="@item.Product.Name" />
+                        }
+                        else
+                        {
+                            <div class="cart-image-placeholder">
+                                No Photo
+                            </div>
+                        }
+
+
+                        <!-- Content -->
+
+                        <div class="cart-item-content">
+
+                            <div class="cart-item-header">
+
+                                <div>
+                                    <h2>
+                                        @item.Product.Name
+                                    </h2>
+
+                                    <div class="room-id">
+                                        @item.Product.ProductId
+                                    </div>
+                                </div>
+
+                                <form asp-controller="Cart"
+                                      asp-action="Remove"
+                                      method="post">
+
+                                    <input type="hidden"
+                                           name="cartItemId"
+                                           value="@item.CartItemId" />
+
+                                    <button type="submit"
+                                            class="remove-button">
+                                        Remove
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+
+                            <!-- Dates -->
+
+                            <div class="date-info">
+
+                                <div class="date-box">
+                                    Check-in
+                                    <strong>
+                                        @item.CheckInDate.ToString("dd MMM yyyy")
+                                    </strong>
+                                </div>
+
+                                <div class="date-box">
+                                    Check-out
+                                    <strong>
+                                        @item.CheckOutDate.ToString("dd MMM yyyy")
+                                    </strong>
+                                </div>
+
+                            </div>
+
+
+                            <div class="night-info">
+                                @nights night(s)
+                                × RM @item.Product.Price.ToString("0.00")
+                            </div>
+
+
+                            <div class="room-total">
+                                RM @total.ToString("0.00")
+                            </div>
+
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+
+
+            <!-- RIGHT: SUMMARY -->
+
+            <div class="summary-card">
+
+                <h2>Booking Summary</h2>
+
+                <div class="summary-row">
+                    <span>Rooms</span>
+                    <span>@Model.Count</span>
+                </div>
+
+                <div class="summary-row">
+                    <span>Stay</span>
+                    <span>Per selected dates</span>
+                </div>
+
+                <div class="summary-total">
+                    <span>Grand Total</span>
+                    <strong>
+                        RM @grandTotal.ToString("0.00")
+                    </strong>
+                </div>
+
+                <!-- Checkout -->
+                <a asp-controller="Order"
+                   asp-action="Checkout"
+                   class="checkout-button">
+                    Proceed to Checkout
+                </a>
+
+                <!-- Clear -->
+
+                <form asp-controller="Cart"
+                      asp-action="Clear"
+                      method="post">
+
+                    <button type="submit"
+                            class="clear-button">
+                        Clear Cart
+                    </button>
+
+                </form>
+
+
+                <!-- Continue -->
+
+                <a asp-controller="Catalog"
+                   asp-action="Index"
+                   class="continue-button">
+                    Continue Shopping
+                </a>
+
+            </div>
+
+        </div>
+    }
+
+</div>

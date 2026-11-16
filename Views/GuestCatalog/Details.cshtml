@@ -1,0 +1,325 @@
+@model Product
+
+@{
+    ViewData["Title"] = "Room Details";
+}
+
+<style>
+    .details-page {
+        min-height: calc(100vh - 70px);
+        background: #f7f7fb;
+        padding: 45px 6%;
+    }
+
+    .details-container {
+        max-width: 1050px;
+        margin: 0 auto;
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-bottom: 22px;
+        color: #655bd0;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+        .back-link:hover { color: #4e45b6; }
+
+    .details-card {
+        background: white;
+        border-radius: 22px;
+        padding: 28px;
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 40px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+    }
+
+    .room-photo {
+        width: 100%;
+        height: 420px;
+        object-fit: cover;
+        border-radius: 16px;
+    }
+
+    .photo-placeholder {
+        width: 100%;
+        height: 420px;
+        border-radius: 16px;
+        background: #eeeef5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #999;
+    }
+
+    .room-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .room-label {
+        display: inline-block;
+        width: fit-content;
+        background: #f0effd;
+        color: #655bd0;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    .room-title {
+        margin: 0;
+        font-size: 34px;
+        color: #202033;
+    }
+
+    .room-id {
+        margin-top: 7px;
+        color: #888;
+        font-size: 14px;
+    }
+
+    .availability {
+        display: inline-block;
+        width: fit-content;
+        margin-top: 15px;
+        padding: 7px 13px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .available   { background: #e8f8ef; color: #179957; }
+    .unavailable { background: #fdebec; color: #d94350; }
+
+    .room-description {
+        margin-top: 25px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+
+    .info-box {
+        background: #f8f8fc;
+        padding: 15px;
+        border-radius: 12px;
+    }
+
+        .info-box span {
+            display: block;
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .info-box strong {
+            color: #333;
+            font-size: 15px;
+        }
+
+    .room-price {
+        margin-top: 24px;
+        font-size: 28px;
+        font-weight: 700;
+        color: #655bd0;
+    }
+
+        .room-price span {
+            color: #888;
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+    /* Login to Book Box */
+    .login-to-book {
+        margin-top: 25px;
+        padding-top: 22px;
+        border-top: 1px solid #eee;
+    }
+
+    .login-cta-box {
+        background: linear-gradient(135deg, #f0effd, #e8e6fb);
+        border: 1px solid #d4d0f8;
+        border-radius: 16px;
+        padding: 28px 24px;
+        text-align: center;
+    }
+
+    .login-cta-icon {
+        font-size: 36px;
+        margin-bottom: 10px;
+    }
+
+    .login-cta-box h3 {
+        margin: 0 0 8px;
+        font-size: 18px;
+        color: #333;
+    }
+
+    .login-cta-box p {
+        margin: 0 0 20px;
+        color: #777;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .login-cta-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .btn-book-login {
+        background: linear-gradient(135deg, #7067d8, #a86fd3);
+        color: white;
+        padding: 12px 28px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 15px;
+        transition: 0.2s;
+    }
+
+        .btn-book-login:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(112,103,216,0.35);
+        }
+
+    .btn-book-register {
+        background: white;
+        color: #7067d8;
+        padding: 11px 24px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 15px;
+        border: 2px solid #c4c0f0;
+        transition: 0.2s;
+    }
+
+        .btn-book-register:hover {
+            background: #f0effd;
+            color: #5e54c8;
+        }
+
+    .unavailable-message {
+        margin-top: 20px;
+        padding: 14px;
+        border-radius: 10px;
+        background: #fff1f2;
+        color: #d94350;
+        font-size: 14px;
+    }
+
+    @@media (max-width: 800px) {
+        .details-card { grid-template-columns: 1fr; }
+        .room-photo, .photo-placeholder { height: 300px; }
+    }
+
+    @@media (max-width: 550px) {
+        .room-description { grid-template-columns: 1fr; }
+        .room-title { font-size: 26px; }
+        .login-cta-buttons { flex-direction: column; }
+    }
+</style>
+
+
+<div class="details-page">
+    <div class="details-container">
+
+        <!-- Back -->
+        <a asp-action="Index" class="back-link">← Back to Browse Rooms</a>
+
+        <!-- Room Card -->
+        <div class="details-card">
+
+            <!-- LEFT: PHOTO -->
+            <div>
+                @if (!string.IsNullOrEmpty(Model.PhotoURL))
+                {
+                    <img src="/photos/@Model.PhotoURL" class="room-photo" alt="@Model.Name" />
+                }
+                else
+                {
+                    <div class="photo-placeholder">
+                        No Photo Available
+                    </div>
+                }
+            </div>
+
+            <!-- RIGHT: INFO -->
+            <div class="room-info">
+
+                <span class="room-label">HOTEL ROOM</span>
+
+                <h1 class="room-title">@Model.Name</h1>
+                <div class="room-id">Room ID: @Model.ProductId</div>
+
+                @if (Model.IsAvailable)
+                {
+                    <span class="availability available">● Available</span>
+                }
+                else
+                {
+                    <span class="availability unavailable">● Currently Unavailable</span>
+                }
+
+                <div class="room-description">
+                    <div class="info-box">
+                        <span>Category</span>
+                        <strong>@Model.Category?.Name</strong>
+                    </div>
+                    <div class="info-box">
+                        <span>Capacity</span>
+                        <strong>@Model.Capacity Guests</strong>
+                    </div>
+                </div>
+
+                <div class="room-price">
+                    RM @Model.Price.ToString("0.00")
+                    <span>/ night</span>
+                </div>
+
+                <!-- Login to Book -->
+                @if (Model.IsAvailable)
+                {
+                    <div class="login-to-book">
+                        <div class="login-cta-box">
+                            <div class="login-cta-icon">🔒</div>
+                            <h3>Ready to Book This Room?</h3>
+                            <p>Login to your account or register to make a reservation and enjoy your stay.</p>
+                            <div class="login-cta-buttons">
+                                <a asp-controller="Account"
+                                   asp-action="Login"
+                                   asp-route-returnURL="/Catalog/Details/@Model.ProductId"
+                                   class="btn-book-login">
+                                    Login to Book
+                                </a>
+                                <a asp-controller="Account"
+                                   asp-action="Register"
+                                   class="btn-book-register">
+                                    Register
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="unavailable-message">
+                        This room is currently unavailable for booking.
+                    </div>
+                }
+
+            </div>
+        </div>
+
+    </div>
+</div>
