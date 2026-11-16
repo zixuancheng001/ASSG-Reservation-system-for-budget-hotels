@@ -17,10 +17,13 @@ Interactive Data Controls - Implemented AJAX-powered real-time searching, column
 ## Team Project Features (Overall System Capabilities)
 *As part of a collaborative team effort, the complete system also integrates the following modules developed by my teammates:*
 
-Room Catalog & Booking Cart - Interactive room browsing with maintenance status, availability filtering, wishlist management, coupon discounts, booking conflict detection, and automated night/price calculations.
-Checkout, Payment & E-Receipts - Cart checkout processing, PDF e-receipt generation/download, interactive floor map room selection, and real-time webcam QR code/barcode scanning.
-Order & Member Administration - Admin dashboards for member account control (block/unblock), order status tracking, onscreen sales report charts, and customer review/rating systems.
-Enhanced User Experience - Desktop notifications, offline access support, guest interface, and temporary login blocking for brute-force protection.
+4. Room Catalog & Booking Cart - Interactive room browsing with maintenance status, availability filtering, wishlist management, coupon discounts, booking conflict detection, and automated night/price calculations.
+
+5. Checkout, Payment & E-Receipts - Cart checkout processing, PDF e-receipt generation/download, interactive floor map room selection, and real-time webcam QR code/barcode scanning.
+
+6. Order & Member Administration - Admin dashboards for member account control (block/unblock), order status tracking, onscreen sales report charts, and customer review/rating systems.
+
+7. Enhanced User Experience - Desktop notifications, offline access support, guest interface, and temporary login blocking for brute-force protection.
 
 <img width="1847" height="1015" alt="image" src="https://github.com/user-attachments/assets/a8d121fa-8914-4037-9956-0ae6271999a1" />
 <img width="1847" height="967" alt="image" src="https://github.com/user-attachments/assets/df179d6b-6ed0-4423-96d9-0dfd5f86aa28" />
