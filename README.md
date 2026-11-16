@@ -2,6 +2,13 @@
 
 A full-stack hotel booking and management web application built with **ASP.NET Core MVC, C#, SQL Server, HTML, CSS, and AJAX**.
 
+## How to Run Locally
+
+1. **Prerequisites**: Install **Visual Studio 2022** with the **ASP.NET and web development** workload (includes SQL Server Express LocalDB).
+2. **Download**: Clone this repository or click **Code** -> **Download ZIP** and extract it to a local folder.
+3. **Open Solution**: Double-click `Demo.sln` in the root directory to open the project in Visual Studio
+4. **Run**: Press `F5` or click the **IIS Express / https** run button in the top toolbar (the included local database `DB.mdf` in the `Demo` folder will attach automatically)
+
 ## My Contributions
 1. User Security & Account Customization
 Authentication & Access - Implemented user login, registration, and secure logout workflows.
