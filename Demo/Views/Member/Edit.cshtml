@@ -1,0 +1,51 @@
+@model MemberVM
+
+@{
+    ViewBag.Title = "Edit Member";
+}
+
+<div class="auth-card" style="width: 440px;">
+    <h1>Edit Member</h1>
+
+    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        <div class="validation-summary-errors" asp-validation-summary="ModelOnly"></div>
+
+        <input type="hidden" asp-for="Email" />
+        <input type="hidden" asp-for="PhotoURL" />
+
+        <label>Email</label>
+        <input value="@Model.Email" disabled />
+
+        <label asp-for="Name">Name</label>
+        <input asp-for="Name" />
+        <span asp-validation-for="Name" class="field-validation-error"></span>
+
+        <label asp-for="Photo">Photo</label>
+        @if (!string.IsNullOrEmpty(Model.PhotoURL))
+        {
+            <div style="margin-bottom: 8px;">
+                <img src="/photos/@Model.PhotoURL" style="width:80px; height:80px; object-fit:cover; border-radius:50%; border:2px solid #eeeaf9;" />
+            </div>
+        }
+        <label class="file-upload-label" for="photoInput">
+            <span class="file-upload-icon">📎</span>
+            <span class="file-upload-text" id="photoInputText">Click to upload photo (optional)</span>
+        </label>
+        <input asp-for="Photo" id="photoInput" type="file" accept="image/*" />
+        <span asp-validation-for="Photo" class="field-validation-error"></span>
+
+        <div class="btn-group">
+            <button type="submit">Update Member</button>
+            <a asp-action="Index" class="auth-links" style="margin-top:10px;">Back to List</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('photoInput').addEventListener('change', function () {
+            const text = this.files.length > 0 ? this.files[0].name : 'Click to upload photo (optional)';
+            document.getElementById('photoInputText').textContent = text;
+        });
+    </script>
+}

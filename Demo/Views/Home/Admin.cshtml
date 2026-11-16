@@ -1,0 +1,613 @@
+﻿@{
+    ViewBag.Title = "Home | Admin";
+
+    int categoryCount = (int)ViewBag.CategoryCount;
+    int productCount = (int)ViewBag.ProductCount;
+    int memberCount = (int)ViewBag.MemberCount;
+    int adminCount = (int)ViewBag.AdminCount;
+    int orderCount = (int)ViewBag.OrderCount;
+    int pendingCount = (int)ViewBag.PendingCount;
+    decimal revenue = (decimal)ViewBag.Revenue;
+}
+
+<style>
+    .admin-home {
+        padding: 44px 6%;
+        min-height: calc(100vh - 70px);
+        background: #f4f4fb;
+    }
+
+    /* ── Header ── */
+    .admin-greeting {
+        margin-bottom: 32px;
+    }
+
+        .admin-greeting h1 {
+            font-size: 28px;
+            font-weight: 760;
+            color: #1a1a2e;
+            margin: 0 0 5px;
+        }
+
+        .admin-greeting p {
+            color: #9898b0;
+            font-size: 14px;
+            margin: 0;
+        }
+
+    /* ── Section label ── */
+    .section-label {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: #aaaac0;
+        margin-bottom: 14px;
+    }
+
+    /* ── Stats grid ── */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 18px;
+        padding: 20px 22px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        transition: box-shadow .2s, transform .15s;
+    }
+
+        .stat-card:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.09);
+            transform: translateY(-2px);
+        }
+
+    .stat-pip {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+    }
+
+    .pip-purple {
+        background: #eeecff;
+    }
+
+    .pip-blue {
+        background: #e4f0ff;
+    }
+
+    .pip-green {
+        background: #e4f8ef;
+    }
+
+    .pip-indigo {
+        background: #e0e7ff;
+    }
+
+    .pip-orange {
+        background: #fff3e4;
+    }
+
+    .pip-red {
+        background: #ffecee;
+    }
+
+    .pip-teal {
+        background: #e2f9f5;
+    }
+
+    .stat-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .stat-num {
+        font-size: 26px;
+        font-weight: 760;
+        color: #1a1a2e;
+        line-height: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .stat-lbl {
+        font-size: 12px;
+        color: #9898b0;
+        margin-top: 4px;
+        font-weight: 500;
+    }
+
+    /* accent bar on left */
+    .stat-card {
+        border-left: 4px solid transparent;
+    }
+
+    .accent-purple {
+        border-left-color: #7b6ef6;
+    }
+
+    .accent-blue {
+        border-left-color: #4f9cf9;
+    }
+
+    .accent-green {
+        border-left-color: #34c882;
+    }
+
+    .accent-indigo {
+        border-left-color: #6366f1;
+    }
+
+    .accent-orange {
+        border-left-color: #f9a84f;
+    }
+
+    .accent-red {
+        border-left-color: #f96f7b;
+    }
+
+    .accent-teal {
+        border-left-color: #2dd4bf;
+    }
+
+    /* ── Charts ── */
+
+    .charts-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 32px;
+    }
+
+    .chart-card {
+        background: white;
+        border-radius: 18px;
+        padding: 22px 24px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+        .chart-card.wide {
+            grid-column: 1 / -1;
+        }
+
+    .chart-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin: 0 0 18px;
+    }
+
+    .chart-subtitle {
+        font-size: 12px;
+        color: #9898b0;
+        font-weight: 500;
+        margin-left: 6px;
+    }
+
+    .chart-wrap {
+        position: relative;
+        height: 220px;
+    }
+
+        .chart-wrap.tall {
+            height: 240px;
+        }
+
+    @@media (max-width: 760px) {
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .chart-card.wide {
+            grid-column: 1;
+        }
+    }
+
+    /* ── Quick access ── */
+    .links-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+    .quick-link {
+        background: white;
+        border-radius: 16px;
+        padding: 16px 20px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        transition: box-shadow .2s, transform .15s;
+        color: #1a1a2e;
+    }
+
+        .quick-link:hover {
+            box-shadow: 0 6px 20px rgba(112,103,216,0.14);
+            transform: translateY(-2px);
+            color: #6d63d8;
+        }
+
+            .quick-link:hover .ql-arrow {
+                opacity: 1;
+                transform: translateX(2px);
+            }
+
+    .ql-pip {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .ql-text {
+        flex: 1;
+    }
+
+        .ql-text strong {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .ql-text span {
+            font-size: 12px;
+            color: #9898b0;
+        }
+
+    .ql-arrow {
+        font-size: 16px;
+        color: #c0c0d8;
+        opacity: 0;
+        transition: opacity .2s, transform .2s;
+    }
+
+    @@media (max-width: 1024px) {
+        .stats-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .links-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 560px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .links-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="admin-home">
+
+    <div class="admin-greeting">
+        <h1>Welcome back 👋</h1>
+        <p>Here's a quick overview of your hotel system.</p>
+    </div>
+
+    <!-- ── Stats ── -->
+    <div class="section-label">Overview</div>
+    <div class="stats-grid">
+
+        <div class="stat-card accent-purple">
+            <div class="stat-pip pip-purple">🏷️</div>
+            <div class="stat-body">
+                <div class="stat-num">@categoryCount</div>
+                <div class="stat-lbl">Categories</div>
+            </div>
+        </div>
+
+        <div class="stat-card accent-blue">
+            <div class="stat-pip pip-blue">🛏️</div>
+            <div class="stat-body">
+                <div class="stat-num">@productCount</div>
+                <div class="stat-lbl">Rooms</div>
+            </div>
+        </div>
+
+        <div class="stat-card accent-green">
+            <div class="stat-pip pip-green">👤</div>
+            <div class="stat-body">
+                <div class="stat-num">@memberCount</div>
+                <div class="stat-lbl">Members</div>
+            </div>
+        </div>
+
+        <div class="stat-card accent-indigo">
+            <div class="stat-pip pip-indigo">🛡️</div>
+            <div class="stat-body">
+                <div class="stat-num">@adminCount</div>
+                <div class="stat-lbl">Admins</div>
+            </div>
+        </div>
+
+        <div class="stat-card accent-orange">
+            <div class="stat-pip pip-orange">📋</div>
+            <div class="stat-body">
+                <div class="stat-num">@orderCount</div>
+                <div class="stat-lbl">Total Orders</div>
+            </div>
+        </div>
+
+        <div class="stat-card accent-red">
+            <div class="stat-pip pip-red">⏳</div>
+            <div class="stat-body">
+                <div class="stat-num">@pendingCount</div>
+                <div class="stat-lbl">Pending Orders</div>
+            </div>
+        </div>
+
+        <div class="stat-card accent-teal">
+            <div class="stat-pip pip-teal">💰</div>
+            <div class="stat-body">
+                <div class="stat-num">RM @revenue.ToString("N0")</div>
+                <div class="stat-lbl">Revenue</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── Charts ── -->
+    <div class="section-label">Reports</div>
+    <div class="charts-grid">
+
+        <!-- Pie: Order Status Distribution -->
+        <div class="chart-card">
+            <p class="chart-title">
+                Order Status Distribution
+                <span class="chart-subtitle">all time</span>
+            </p>
+            <div class="chart-wrap">
+                <canvas id="chartOrderStatus"></canvas>
+            </div>
+        </div>
+
+        <!-- Bar: Monthly Revenue -->
+        <div class="chart-card">
+            <p class="chart-title">
+                Monthly Revenue
+                <span class="chart-subtitle">last 6 months</span>
+            </p>
+            <div class="chart-wrap">
+                <canvas id="chartRevenue"></canvas>
+            </div>
+        </div>
+
+        <!-- Horizontal Bar: Top 5 Rooms -->
+        <div class="chart-card wide">
+            <p class="chart-title">
+                Top 5 Most Booked Rooms
+                <span class="chart-subtitle">by order count</span>
+            </p>
+            <div class="chart-wrap">
+                <canvas id="chartTopRooms"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── Quick Access ── -->
+    <div class="section-label">Quick Access</div>
+    <div class="links-grid">
+
+        <a href="/Category/Index" class="quick-link">
+            <div class="ql-pip pip-purple">🏷️</div>
+            <div class="ql-text">
+                <strong>Category</strong>
+                <span>@categoryCount categories</span>
+            </div>
+            <div class="ql-arrow">›</div>
+        </a>
+
+        <a href="/Product/Index" class="quick-link">
+            <div class="ql-pip pip-blue">🛏️</div>
+            <div class="ql-text">
+                <strong>Product</strong>
+                <span>@productCount rooms</span>
+            </div>
+            <div class="ql-arrow">›</div>
+        </a>
+
+        <a href="/Member/Index" class="quick-link">
+            <div class="ql-pip pip-green">👤</div>
+            <div class="ql-text">
+                <strong>Member</strong>
+                <span>@memberCount members</span>
+            </div>
+            <div class="ql-arrow">›</div>
+        </a>
+
+        <a href="/Admin/Index" class="quick-link">
+            <div class="ql-pip pip-indigo">🛡️</div>
+            <div class="ql-text">
+                <strong>Admin</strong>
+                <span>@adminCount admins</span>
+            </div>
+            <div class="ql-arrow">›</div>
+        </a>
+
+        <a href="/Order/Index" class="quick-link">
+            <div class="ql-pip pip-orange">📋</div>
+            <div class="ql-text">
+                <strong>Order</strong>
+                <span>@pendingCount pending</span>
+            </div>
+            <div class="ql-arrow">›</div>
+        </a>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // ── Shared defaults ──────────────────────────────────────────────
+        Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+        Chart.defaults.font.size   = 12;
+        Chart.defaults.color       = "#9898b0";
+
+        // ── 1. Order Status Pie ──────────────────────────────────────────
+        new Chart(document.getElementById('chartOrderStatus'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'Cancelled', 'Pending'],
+                datasets: [{
+                    data: [
+                        @(ViewBag.StatusCompleted ?? 0),
+                        @(ViewBag.StatusCancelled ?? 0),
+                        @(ViewBag.StatusPending ?? 0)
+                    ],
+                    backgroundColor: ['#34c882', '#f96f7b', '#f9a84f'],
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '62%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { boxWidth: 12, padding: 14 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ` ${ctx.label}: ${ctx.parsed} orders`
+                        }
+                    }
+                }
+            }
+        });
+
+        // ── 2. Monthly Revenue Bar ───────────────────────────────────────
+        const revenueLabels = @Html.Raw(
+                    System.Text.Json.JsonSerializer.Serialize(
+                            (ViewBag.RevenueLabels as List<string>) ?? new List<string>()));
+
+    const revenueData = @Html.Raw(
+                System.Text.Json.JsonSerializer.Serialize(
+                        (ViewBag.RevenueData as List<decimal>) ?? new List<decimal>()));
+
+    new Chart(document.getElementById('chartRevenue'), {
+        type: 'bar',
+        data: {
+            labels: revenueLabels,
+            datasets: [{
+                label: 'Revenue (RM)',
+                data: revenueData,
+                backgroundColor: 'rgba(123,110,246,0.18)',
+                borderColor: '#7b6ef6',
+                borderWidth: 2,
+                borderRadius: 8,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ` RM ${Number(ctx.parsed.y).toFixed(2)}`
+                    }
+                }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(0,0,0,0.04)' },
+                    ticks: {
+                        callback: v => 'RM ' + Number(v).toLocaleString()
+                    }
+                }
+            }
+        }
+    });
+
+        // ── 3. Top 5 Rooms Horizontal Bar ───────────────────────────────
+        const roomLabels = @Html.Raw(
+                System.Text.Json.JsonSerializer.Serialize(
+                        (ViewBag.TopRoomLabels as List<string>) ?? new List<string>()));
+
+    const roomData = @Html.Raw(
+                System.Text.Json.JsonSerializer.Serialize(
+                        (ViewBag.TopRoomData as List<int>) ?? new List<int>()));
+
+    new Chart(document.getElementById('chartTopRooms'), {
+        type: 'bar',
+        data: {
+            labels: roomLabels,
+            datasets: [{
+                label: 'Bookings',
+                data: roomData,
+                backgroundColor: [
+                    'rgba(79,156,249,0.2)',
+                    'rgba(52,200,130,0.2)',
+                    'rgba(249,168,79,0.2)',
+                    'rgba(249,111,123,0.2)',
+                    'rgba(45,212,191,0.2)'
+                ],
+                borderColor: ['#4f9cf9','#34c882','#f9a84f','#f96f7b','#2dd4bf'],
+                borderWidth: 2,
+                borderRadius: 8,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ` ${ctx.parsed.x} bookings`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(0,0,0,0.04)' },
+                    ticks: { stepSize: 1 }
+                },
+                y: { grid: { display: false } }
+            }
+        }
+    });
+</script>
+}
